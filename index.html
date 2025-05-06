@@ -46,15 +46,17 @@
 
         /* 标题行样式 */
         th {
-            font-size: 1.125rem;
-            text-align: center;
-        }
+    font-size: 1.25rem;  /* Increased from 1.125rem */
+    text-align: center;  /* Ensured center alignment */
+    padding: 0.75rem;    /* Added padding */
+    font-weight: bold;   /* Added bold for emphasis */
+}
     </style>
 </head>
 
 <body class="bg-gray-100 font-sans">
     <div class="container mx-auto p-4 sm:p-8">
-        <h1 class="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-4 sm:mb-6">宝宝日常情况记录</h1>
+        <h1 class="text-2xl sm:text-3xl font-bold text-center text-gray-800 mb-4 sm:mb-6">张好好 日常情况记录</h1>
         <div class="flex justify-center mt-6 sm:mt-8 mb-6 sm:mb-8">
             <button id="save-data" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded mr-4">
                 保存数据
@@ -72,10 +74,9 @@
     </div>
 
     <script>
-        const now = new Date();
-        const currentYear = now.getFullYear();
-        const currentMonth = now.getMonth();
-        const currentDay = now.getDate();
+        const startYear = 2025;
+        const startMonth = 5;  // 修改为5月
+        const startDay = 6;    // 修改为6日
         const months = [
             '一月', '二月', '三月', '四月', '五月', '六月',
             '七月', '八月', '九月', '十月', '十一月', '十二月'
@@ -83,10 +84,10 @@
 
         const monthlyTables = document.getElementById('monthly-tables');
 
-        for (let month = currentMonth; month < 12; month++) {
+        for (let month = startMonth - 1; month < 12; month++) {
             const monthHeading = document.createElement('h2');
             monthHeading.className = 'text-xl sm:text-2xl font-bold text-gray-800 mb-3 sm:mb-4 collapse-btn';
-            monthHeading.textContent = `${currentYear}年 ${months[month]}`;
+            monthHeading.textContent = `${startYear}年 ${months[month]}`;
             const collapseIcon = document.createElement('i');
             collapseIcon.className = 'fa-solid fa-chevron-down ml-2';
             monthHeading.appendChild(collapseIcon);
@@ -99,7 +100,8 @@
             });
 
             const table = document.createElement('table');
-            table.className = 'min-w-full bg-white border border-gray-300 rounded-lg overflow-hidden shadow-md mb-6 sm:mb-8';
+            table.className = 'min-w-full bg-white border border-gray-300 rounded-lg overflow-hidden shadow-md mb-6 sm:mb-8 hidden'; // 默认隐藏
+            collapseIcon.classList.replace('fa-chevron-down', 'fa-chevron-up'); // 默认显示向上箭头
 
             const thead = document.createElement('thead');
             thead.className = 'bg-gray-200';
@@ -107,26 +109,28 @@
             const headers = [
                 '日期', 'D3食用情况', '大便情况', '体重（kg）', '辅食内容'
             ];
-            headers.forEach(headerText => {
-                const th = document.createElement('th');
-                th.className = 'py-2 px-3 sm:py-3 sm:px-6 text-left text-xs sm:text-sm font-medium text-gray-700 uppercase tracking-wider';
-                th.textContent = headerText;
-                headerRow.appendChild(th);
-            });
+          headers.forEach(headerText => {
+    const th = document.createElement('th');
+    th.className = 'py-2 px-3 sm:py-3 sm:px-6 text-center text-sm sm:text-base font-bold text-gray-700 uppercase tracking-wider';
+    // Changed text-left to text-center and adjusted font sizes
+    th.textContent = headerText;
+    headerRow.appendChild(th);
+});
             thead.appendChild(headerRow);
             table.appendChild(thead);
 
             const tbody = document.createElement('tbody');
-            const daysInMonth = new Date(currentYear, month + 1, 0).getDate();
-            let startDay = 1;
-            if (month === currentMonth) {
-                startDay = currentDay;
-            }
-            for (let day = startDay; day <= daysInMonth; day++) {
+            const daysInMonth = new Date(startYear, month + 1, 0).getDate();
+            for (let day = 1; day <= daysInMonth; day++) {
+                if (month === startMonth - 1 && day < startDay) {
+                    continue;
+                }
                 const row = document.createElement('tr');
                 const dateCell = document.createElement('td');
                 dateCell.className = 'py-2 px-3 sm:py-4 sm:px-6 border-t border-gray-300';
-                dateCell.textContent = `${month + 1}-${day}`;
+                const formattedMonth = String(month + 1).padStart(2, '0');
+                const formattedDay = String(day).padStart(2, '0');
+                dateCell.textContent = `${formattedMonth}-${formattedDay}`;
                 row.appendChild(dateCell);
 
                 const d3Cell = document.createElement('td');
@@ -208,18 +212,18 @@
             const allTables = document.querySelectorAll('table');
             allTables.forEach((table, index) => {
                 const ws = XLSX.utils.table_to_sheet(table);
-                const monthName = months[index + currentMonth];
-                XLSX.utils.book_append_sheet(wb, ws, `${currentYear}年 ${monthName}`);
+                const monthName = months[index + startMonth - 1];
+                XLSX.utils.book_append_sheet(wb, ws, `${startYear}年 ${monthName}`);
             });
             const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
             const blob = new Blob([s2ab(wbout)], { type: 'application/octet-stream' });
-            saveAs(blob, `${currentYear}年宝宝日常情况记录.xlsx`);
+            saveAs(blob, `${startYear}年宝宝日常情况记录.xlsx`);
         });
 
         document.getElementById('download-word').addEventListener('click', () => {
             const htmlContent = document.getElementById('monthly-tables').outerHTML;
             const blob = new Blob([htmlContent], { type: 'application/msword' });
-            saveAs(blob, `${currentYear}年宝宝日常情况记录.doc`);
+            saveAs(blob, `${startYear}年宝宝日常情况记录.doc`);
         });
 
         document.getElementById('save-data').addEventListener('click', saveData);
@@ -234,4 +238,3 @@
 </body>
 
 </html>
-    
